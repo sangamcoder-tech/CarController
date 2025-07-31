@@ -288,41 +288,6 @@
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <script src="app.js"></script>
   <script>
-    // Add haptic feedback for mobile devices
-    function addHapticFeedback() {
-      if ('vibrate' in navigator) {
-        navigator.vibrate(50);
-      }
-    }
-
-    // Add touch feedback to all buttons
-    document.querySelectorAll('.btn').forEach(button => {
-      button.addEventListener('touchstart', function(e) {
-        e.preventDefault();
-        addHapticFeedback();
-        this.style.transform = 'translateY(1px) scale(0.95)';
-      });
-      
-      button.addEventListener('touchend', function(e) {
-        e.preventDefault();
-        this.style.transform = '';
-      });
-      
-      button.addEventListener('click', function() {
-        addHapticFeedback();
-      });
-    });
-
-    // Prevent zoom on double tap
-    let lastTouchEnd = 0;
-    document.addEventListener('touchend', function (event) {
-      const now = (new Date()).getTime();
-      if (now - lastTouchEnd <= 300) {
-        event.preventDefault();
-      }
-      lastTouchEnd = now;
-    }, false);
-
     // Update connection status
     function updateConnectionStatus(connected) {
       const statusEl = document.getElementById('connectionStatus');
@@ -340,10 +305,12 @@
     window.sendCommand = function(command) {
       // Add visual feedback
       const button = event.target;
-      button.style.transform = 'translateY(1px) scale(0.95)';
-      setTimeout(() => {
-        button.style.transform = '';
-      }, 150);
+      if (button && button.classList.contains('btn')) {
+        button.style.transform = 'translateY(1px) scale(0.95)';
+        setTimeout(() => {
+          button.style.transform = '';
+        }, 150);
+      }
       
       // Call original function
       if (originalSendCommand) {
