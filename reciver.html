@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MQTT Receiver</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    #messages {
+      margin-top: 20px;
+      padding: 10px;
+      background: #f4f4f4;
+      border: 1px solid #ccc;
+      min-height: 100px;
+    }
+  </style>
+</head>
+<body>
+  <h2>MQTT Message Receiver</h2>
+  <p>Listening to topic: <strong>esp32/car/command</strong></p>
+
+  <div id="messages">Waiting for messages...</div>
+
+  <!-- MQTT.js CDN -->
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <script>
+    const messagesDiv = document.getElementById('messages');
+
+    const client = mqtt.connect('wss://test.mosquitto.org:8081');
+
+    client.on('connect', () => {
+      console.log('Connected to MQTT broker');
+      client.subscribe('esp32/car/command', (err) => {
+        if (err) {
+          messagesDiv.innerHTML = 'Error subscribing to topic.';
+        } else {
+          messagesDiv.innerHTML = 'Subscribed! Waiting for messages...';
+        }
+      });
+    });
+
+    client.on('message', (topic, message) => {
+      const msgText = message.toString();
+      console.log(`Received message: ${msgText}`);
+      messagesDiv.innerHTML += `<div><strong>${topic}</strong>: ${msgText}</div>`;
+    });
+
+    client.on('error', (err) => {
+      console.error('MQTT error:', err);
+      messagesDiv.innerHTML = 'MQTT connection error.';
+    });
+  </script>
+</body>
+</html>

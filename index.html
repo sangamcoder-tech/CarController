@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Car Controller</title>
+  <style>
+    button {
+      padding: 12px 24px;
+      font-size: 18px;
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h2>ESP32 Car Controller</h2>
+  <button onclick="sendCommand('forward')">Forward</button>
+  <button onclick="sendCommand('left')">Left</button>
+  <button onclick="sendCommand('stop')">Stop</button>
+  <button onclick="sendCommand('right')">Right</button>
+  <button onclick="sendCommand('backward')">Backward</button>
+
+  <!-- MQTT.js CDN -->
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

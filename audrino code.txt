@@ -1,0 +1,150 @@
+#include <WiFi.h>
+#include <WebServer.h>
+
+// Motor pins
+// const int IN1 = 27;  // Drive motor forward/backward
+// const int IN2 = 26;
+// const int IN3 = 25;  // Steering motor left/right
+// const int IN4 = 33;
+
+const int IN1 = 33;  // Drive motor forward/backward
+const int IN2 = 25;
+const int IN3 = 27;  // Steering motor left/right
+const int IN4 = 26;
+
+// Create a web server on port 80
+WebServer server(80);
+
+// HTML content for the control interface
+const char* html = R"rawliteral(
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ESP32 Car Control</title>
+  <style>
+    body { text-align: center; font-family: Arial; margin-top: 50px; }
+    button {
+      width: 100px; height: 50px; margin: 10px; font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h2>ESP32 Car Control</h2>
+  <button onclick="sendCmd('forward')">Forward</button><br>
+  <button onclick="sendCmd('left')">Left</button>
+  <button onclick="sendCmd('stop')">Stop</button>
+  <button onclick="sendCmd('right')">Right</button><br>
+  <button onclick="sendCmd('backward')">Backward</button>
+
+  <script>
+    function sendCmd(cmd) {
+      fetch("/" + cmd);
+    }
+  </script>
+</body>
+</html>
+)rawliteral";
+
+// Motor control functions
+void moveStop() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
+  Serial.println("Command: STOP");
+}
+
+void moveForward() {
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
+  Serial.println("Command: FORWARD");
+}
+
+void moveBackward() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
+  Serial.println("Command: BACKWARD");
+}
+
+void turnLeft() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+  Serial.println("Command: LEFT");
+}
+
+void turnRight() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+  Serial.println("Command: RIGHT");
+}
+
+// Web routes
+void setupRoutes() {
+  server.on("/", []() {
+    Serial.println("Page Requested");
+    server.send(200, "text/html", html);
+  });
+
+  server.on("/forward", []() {
+    moveForward();
+    server.send(204, "");
+  });
+
+  server.on("/backward", []() {
+    moveBackward();
+    server.send(204, "");
+  });
+
+  server.on("/left", []() {
+    turnLeft();
+    server.send(204, "");
+  });
+
+  server.on("/right", []() {
+    turnRight();
+    server.send(204, "");
+  });
+
+  server.on("/stop", []() {
+    moveStop();
+    server.send(204, "");
+  });
+}
+
+void setup() {
+  // Setup serial and motor pins
+  Serial.begin(115200);
+  delay(1000);
+  Serial.println("Booting ESP32 Car Server...");
+
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
+  moveStop();
+
+  // Start Wi-Fi access point
+  WiFi.softAP("CarWiFi", "12345678");
+  Serial.println("Wi-Fi AP started.");
+  Serial.println("SSID: CarWiFi");
+  Serial.println("Password: 12345678");
+  Serial.println("Open browser at: http://192.168.4.1");
+
+  // Start the server
+  setupRoutes();
+  server.begin();
+  Serial.println("HTTP server started.");
+}
+
+void loop() {
+  server.handleClient();
+  delay(10);  // Give CPU breathing room
+}
