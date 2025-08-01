@@ -29,18 +29,18 @@ client.on('error', (err) => {
 function sendCommand(command) {
   const topic = 'esp32/car/command';
   console.log('Sending command:', command);
-  
+
   // Visual feedback
   const commandMap = {
     'forward': '🔼',
-    'backward': '🔽', 
+    'backward': '🔽',
     'left': '◀️',
     'right': '▶️',
     'stop': '⏹️'
   };
-  
+
   console.log(`${commandMap[command] || '🚗'} Command: ${command}`);
-  
+
   // Publish to MQTT
   if (client && client.connected) {
     client.publish(topic, command);
@@ -53,13 +53,13 @@ function sendCommand(command) {
 }
 
 // Add keyboard support for desktop users
-document.addEventListener('keydown', function(event) {
+document.addEventListener('keydown', function (event) {
   // Prevent default behavior for arrow keys
   if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(event.code)) {
     event.preventDefault();
   }
-  
-  switch(event.code) {
+
+  switch (event.code) {
     case 'ArrowUp':
     case 'KeyW':
       sendCommand('forward');
@@ -87,12 +87,12 @@ document.addEventListener('keydown', function(event) {
   }
 });
 
-document.addEventListener('keyup', function(event) {
+document.addEventListener('keyup', function (event) {
   // Reset button styles on key release
   const buttonMap = {
     'ArrowUp': 'up',
     'KeyW': 'up',
-    'ArrowDown': 'down', 
+    'ArrowDown': 'down',
     'KeyS': 'down',
     'ArrowLeft': 'left',
     'KeyA': 'left',
@@ -100,9 +100,26 @@ document.addEventListener('keyup', function(event) {
     'KeyD': 'right',
     'Space': 'stop'
   };
-  
+
   const buttonId = buttonMap[event.code];
   if (buttonId) {
     document.getElementById(buttonId).style.transform = '';
+  }
+});
+
+
+// Speed slider handler
+const speedSlider = document.getElementById('speedSlider');
+const speedValue = document.getElementById('speedValue');
+
+speedSlider.addEventListener('input', function () {
+  const speed = parseInt(this.value);
+  speedValue.textContent = speed;
+
+  if (client && client.connected) {
+    client.publish('esp32/car/speed', String(speed));
+    console.log(`🚀 Speed set to: ${speed}%`);
+  } else {
+    console.warn('MQTT client not connected (speed)');
   }
 });
